@@ -36,9 +36,7 @@ export default function ChunavGuru() {
 
     const response = await askChunavGuru(userMessage, language);
 
-    if (response.error) {
-      setMessages(prev => [...prev, { role: 'bot', content: response.error as string }]);
-    } else if (response.text) {
+    if (response.text) {
       setMessages(prev => [...prev, { role: 'bot', content: response.text }]);
     }
 
@@ -50,6 +48,9 @@ export default function ChunavGuru() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="chunav-guru-chat"
+            role="complementary"
+            aria-label="Chunav Guru AI Assistant"
             initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
@@ -183,6 +184,9 @@ export default function ChunavGuru() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls="chunav-guru-chat"
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
         className="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-white border-none hover:bg-primary transition-colors"
         style={{ boxShadow: '0px 4px 20px rgba(0,91,191,0.3)' }}
       >

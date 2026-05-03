@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logger } from '@/lib/logger';
 
 // Offline Knowledge Base
 const offlineExpert: Record<string, { en: string; hi: string }> = {
@@ -32,11 +33,16 @@ export async function askChunavGuru(question: string, language: 'en' | 'hi') {
 
   // CHECK FOR OFFLINE KNOWLEDGE FIRST (to be fast and reliable)
   let offlineResponse = '';
-  if (lowerQ.includes('dashboard') || lowerQ.includes('about this')) offlineResponse = offlineExpert['dashboard'][language];
-  else if (lowerQ.includes('process') || lowerQ.includes('how it works')) offlineResponse = offlineExpert['process'][language];
-  else if (lowerQ.includes('mp') || lowerQ.includes('parliament')) offlineResponse = offlineExpert['mp'][language];
-  else if (lowerQ.includes('mla') || lowerQ.includes('assembly')) offlineResponse = offlineExpert['mla'][language];
-  else if (lowerQ.includes('local') || lowerQ.includes('panchayat')) offlineResponse = offlineExpert['local'][language];
+  if (lowerQ.includes('dashboard') || lowerQ.includes('about this') || lowerQ.includes('डैशबोर्ड')) 
+    offlineResponse = offlineExpert['dashboard'][language];
+  else if (lowerQ.includes('process') || lowerQ.includes('how it works') || lowerQ.includes('प्रक्रिया')) 
+    offlineResponse = offlineExpert['process'][language];
+  else if (lowerQ.includes('mp') || lowerQ.includes('parliament') || lowerQ.includes('सांसद')) 
+    offlineResponse = offlineExpert['mp'][language];
+  else if (lowerQ.includes('mla') || lowerQ.includes('assembly') || lowerQ.includes('विधायक')) 
+    offlineResponse = offlineExpert['mla'][language];
+  else if (lowerQ.includes('local') || lowerQ.includes('panchayat') || lowerQ.includes('स्थानीय') || lowerQ.includes('पंचायत')) 
+    offlineResponse = offlineExpert['local'][language];
 
   if (offlineResponse) {
     return { text: offlineResponse };
@@ -55,9 +61,12 @@ export async function askChunavGuru(question: string, language: 'en' | 'hi') {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return { text: response.text() };
+    const text = response.text();
+
+    await logger.info('Gemini AI response success', { question, language });
+    return { text };
   } catch (error: any) {
-    console.error('Gemini API Error Detail:', error);
+    await logger.error('Gemini AI error', error, { question, language });
     
     // Final Fallback if API fails (even with key)
     return { 

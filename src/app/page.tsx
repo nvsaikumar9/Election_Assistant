@@ -24,6 +24,11 @@ import { electionWatchData } from '@/data/electionWatch';
 import { ElectionMap, ElectionTree } from '@/components/ElectionWatch';
 import EligibilityWizard from '@/components/EligibilityWizard';
 import EVMSimulator from '@/components/EVMSimulator';
+import { KPICard } from '@/components/KPICard';
+import { ProcessCard } from '@/components/ProcessCard';
+import { LocationSearch } from '@/components/LocationSearch';
+import { SkipLink } from '@/components/SkipLink';
+import FocusTrap from 'focus-trap-react';
 
 const iconMap = {
   UserPlus: UserPlus,
@@ -96,10 +101,11 @@ export default function ElectionAssistant() {
   const t = uiStrings[lang];
 
   return (
-    <main className="min-h-screen bg-surface text-on-surface relative">
+    <div className="min-h-screen bg-surface text-on-surface relative">
+      <SkipLink />
 
       {/* ━━━ HEADER / HERO ━━━ */}
-      <header className="bg-white border-b border-outline-variant">
+      <header className="bg-white border-b border-outline-variant" role="banner">
         <div className="max-w-[1280px] mx-auto px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Brand */}
           <div className="flex items-center gap-3">
@@ -114,15 +120,17 @@ export default function ElectionAssistant() {
           {/* Controls */}
           <div className="flex items-center gap-3">
             {/* Language Toggle */}
-            <div className="flex items-center border border-outline-variant rounded-full overflow-hidden">
+            <div className="flex items-center border border-outline-variant rounded-full overflow-hidden" role="group" aria-label="Language selection">
               <button
                 onClick={() => setLang('en')}
+                aria-pressed={lang === 'en'}
                 className={`px-4 py-[6px] text-[13px] font-medium transition-colors ${lang === 'en' ? 'bg-primary-container text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
               >
                 EN
               </button>
               <button
                 onClick={() => setLang('hi')}
+                aria-pressed={lang === 'hi'}
                 className={`px-4 py-[6px] text-[13px] font-medium transition-colors ${lang === 'hi' ? 'bg-primary-container text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
               >
                 हिन्दी
@@ -130,11 +138,12 @@ export default function ElectionAssistant() {
             </div>
 
             {/* Election Type Selector */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2" role="group" aria-label="Election type selection">
               {(['General', 'State', 'Local'] as ElectionType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setElectionType(type)}
+                  aria-pressed={electionType === type}
                   className={`px-4 py-[6px] rounded-full text-[13px] font-medium border transition-all ${
                     electionType === type
                       ? 'bg-primary-container text-white border-primary-container'
@@ -149,7 +158,8 @@ export default function ElectionAssistant() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        {/* Hero Section */}
       <section className="bg-white">
         <div className="max-w-[1280px] mx-auto px-6 pt-10 pb-12">
           <motion.div
@@ -173,27 +183,18 @@ export default function ElectionAssistant() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
               <AnimatePresence mode="wait">
                 {electionKPIs[electionType].map((kpi, idx) => (
-                  <motion.div
+                  <KPICard
                     key={`${electionType}-${idx}`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2, delay: idx * 0.05 }}
-                    className="ds-card p-5 border-l-4 border-l-primary-container"
-                  >
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-on-surface-variant block mb-1">
-                      {kpi.label[lang]}
-                    </span>
-                    <div className="text-[28px] font-bold text-on-surface leading-tight mb-1">
-                      {kpi.value}
-                    </div>
-                    <span className="text-[12px] text-on-surface-variant font-medium">
-                      {kpi.subLabel[lang]}
-                    </span>
-                  </motion.div>
+                    label={kpi.label[lang]}
+                    value={kpi.value}
+                    subLabel={kpi.subLabel[lang]}
+                    idx={idx}
+                  />
                 ))}
               </AnimatePresence>
             </div>
+
+            <LocationSearch lang={lang} />
           </motion.div>
 
           {/* Mobile Election Type Selector */}
@@ -287,46 +288,25 @@ export default function ElectionAssistant() {
               };
               
               return (
-                <motion.div
+                <ProcessCard
                   key={step.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08, duration: 0.4 }}
+                  id={step.id}
+                  index={index}
+                  icon={Icon}
+                  title={content.title}
+                  description={content.shortDescription}
+                  learnMoreText={t.learnMore}
+                  electionType={electionType}
+                  colorClass={stepColorMap[index]}
+                  bgClass={stepBgMap[index]}
                   onClick={() => setSelectedStep(step)}
-                  className="group cursor-pointer"
-                >
-                  <div className="ds-card p-6 h-full flex flex-col">
-                    {/* Step Number Chip */}
-                    <div className="flex items-center justify-between mb-5">
-                      <div className={`w-10 h-10 rounded-lg ${stepBgMap[index]} flex items-center justify-center`}>
-                        <Icon size={20} className={stepColorMap[index]} />
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-bold text-primary-container uppercase tracking-widest mb-1">{electionType}</span>
-                        <span className="text-[12px] font-bold text-on-surface-variant tracking-[0.08em]">
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                      </div>
-                    </div>
-
-                    <h3 className="text-[16px] font-medium text-on-surface mb-2 group-hover:text-primary-container transition-colors">
-                      {content.title}
-                    </h3>
-                    <p className="text-[14px] leading-[1.5] text-on-surface-variant mb-5 flex-1">
-                      {content.shortDescription}
-                    </p>
-
-                    <div className="flex items-center text-[13px] font-medium text-primary-container group-hover:gap-2 transition-all">
-                      {t.learnMore}
-                      <ChevronRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </motion.div>
+                />
               );
             })}
           </div>
         </div>
       </section>
+
 
 
       {/* ━━━ DETAIL OVERLAY ━━━ */}
@@ -343,37 +323,42 @@ export default function ElectionAssistant() {
             />
 
             {/* Panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-4 md:inset-10 lg:inset-16 z-50 overflow-hidden flex items-center justify-center"
-            >
-              <div className="bg-white border border-outline-variant rounded-lg w-full max-w-5xl max-h-full overflow-y-auto shadow-[0_8px_30px_rgba(0,0,0,0.12)] relative scrollbar-hide">
-                {/* Close */}
-                <button
-                  onClick={() => setSelectedStep(null)}
-                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container transition-colors z-10 text-on-surface-variant"
-                >
-                  <X size={20} />
-                </button>
+            <FocusTrap focusTrapOptions={{ allowOutsideClick: true }}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.3 }}
+                className="fixed inset-4 md:inset-10 lg:inset-16 z-50 overflow-hidden flex items-center justify-center"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
+              >
+                <div className="bg-white border border-outline-variant rounded-lg w-full max-w-5xl max-h-full overflow-y-auto shadow-[0_8px_30px_rgba(0,0,0,0.12)] relative scrollbar-hide">
+                  {/* Close */}
+                  <button
+                    onClick={() => setSelectedStep(null)}
+                    aria-label="Close details"
+                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container transition-colors z-10 text-on-surface-variant"
+                  >
+                    <X size={20} />
+                  </button>
 
-                <div className="flex flex-col md:flex-row">
-                  {/* Left Sidebar */}
-                  <div className="md:w-1/3 p-8 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low">
-                    <div className={`mb-6 w-14 h-14 rounded-lg ${stepBgMap[electionProcess.indexOf(selectedStep)]} flex items-center justify-center`}>
-                      {React.createElement(iconMap[selectedStep.icon as keyof typeof iconMap], {
-                        size: 28,
-                        className: stepColorMap[electionProcess.indexOf(selectedStep)]
-                      })}
-                    </div>
-                    <h2 className="text-[32px] font-medium leading-[1.3] text-on-surface mb-4">
-                      {({
-                        ...selectedStep.content[lang],
-                        ...(selectedStep.typeSpecificContent?.[electionType]?.[lang] || {})
-                      }).title}
-                    </h2>
+                  <div className="flex flex-col md:flex-row">
+                    {/* Left Sidebar */}
+                    <div className="md:w-1/3 p-8 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low">
+                      <div className={`mb-6 w-14 h-14 rounded-lg ${stepBgMap[electionProcess.indexOf(selectedStep)]} flex items-center justify-center`}>
+                        {React.createElement(iconMap[selectedStep.icon as keyof typeof iconMap], {
+                          size: 28,
+                          className: stepColorMap[electionProcess.indexOf(selectedStep)]
+                        })}
+                      </div>
+                      <h2 id="modal-title" className="text-[32px] font-medium leading-[1.3] text-on-surface mb-4">
+                        {({
+                          ...selectedStep.content[lang],
+                          ...(selectedStep.typeSpecificContent?.[electionType]?.[lang] || {})
+                        }).title}
+                      </h2>
                     <p className="text-[14px] leading-[1.5] text-on-surface-variant italic">
                       &ldquo;{({
                         ...selectedStep.content[lang],
@@ -467,17 +452,25 @@ export default function ElectionAssistant() {
                 </div>
               </div>
             </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          </FocusTrap>
+        </>
+      )}
+    </AnimatePresence>
 
+      </main>
 
       {/* ━━━ FOOTER ━━━ */}
-      <footer className="border-t border-outline-variant bg-white">
-        <div className="max-w-[1280px] mx-auto px-6 py-8 text-center">
-          <p className="text-[14px] text-on-surface-variant font-medium">{t.footer}</p>
+      <footer className="bg-surface-container-low border-t border-outline-variant py-12 px-6" role="contentinfo">
+        <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Vote className="text-primary-container" size={24} />
+            <span className="text-[18px] font-semibold text-on-surface">Election Pathways</span>
+          </div>
+          <p className="text-[14px] text-on-surface-variant">
+            &copy; {new Date().getFullYear()} Election Assistant. All rights reserved.
+          </p>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
