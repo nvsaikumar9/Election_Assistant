@@ -22,13 +22,19 @@ import {
 import { electionProcess, ProcessStep, ElectionType, Language, electionKPIs } from '@/data/electionProcess';
 import { electionWatchData } from '@/data/electionWatch';
 import { ElectionMap, ElectionTree } from '@/components/ElectionWatch';
-import EligibilityWizard from '@/components/EligibilityWizard';
-import EVMSimulator from '@/components/EVMSimulator';
 import { KPICard } from '@/components/KPICard';
 import { ProcessCard } from '@/components/ProcessCard';
 import { LocationSearch } from '@/components/LocationSearch';
 import { SkipLink } from '@/components/SkipLink';
-import FocusTrap from 'focus-trap-react';
+import dynamic from 'next/dynamic';
+
+const FocusTrap = dynamic(() => import('focus-trap-react'), { ssr: false });
+const EVMSimulator = dynamic(() => import('@/components/EVMSimulator'), { 
+  loading: () => <div className="h-40 w-full animate-pulse bg-surface-container-low rounded-lg"></div>
+});
+const EligibilityWizard = dynamic(() => import('@/components/EligibilityWizard'), {
+  loading: () => <div className="h-40 w-full animate-pulse bg-surface-container-low rounded-lg"></div>
+});
 
 const iconMap = {
   UserPlus: UserPlus,

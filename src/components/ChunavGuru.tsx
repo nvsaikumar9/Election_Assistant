@@ -138,7 +138,9 @@ export default function ChunavGuru() {
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="bg-surface-container-low p-3 rounded rounded-tl-none border border-outline-variant">
-                        <Loader2 className="animate-spin text-primary-container" size={18} />
+                        <div className="animate-spin text-primary-container inline-flex">
+                          <Loader2 size={18} />
+                        </div>
                       </div>
                     </div>
                   )}

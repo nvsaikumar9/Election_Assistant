@@ -70,7 +70,9 @@ export function ElectionMap({ ongoing, lang }: { ongoing: UpcomingElection[], la
         
         <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2 pointer-events-none">
            <div className="ds-chip ds-chip-red shadow-sm border border-secondary-container/20 pointer-events-auto bg-white/90 backdrop-blur">
-              <div className="w-2 h-2 rounded-full bg-secondary-container animate-pulse" />
+              <div className="animate-pulse inline-flex">
+                <div className="w-2 h-2 rounded-full bg-secondary-container" />
+              </div>
               <span>{lang === 'en' ? 'Live Ongoing Map' : 'लाइव नक्शा'}</span>
            </div>
         </div>

@@ -54,7 +54,7 @@ export const LocationSearch = ({ lang }: { lang: 'en' | 'hi' }) => {
           disabled={isSearching || !query.trim()}
           className="bg-primary-container text-white px-6 py-2 rounded-lg font-medium hover:bg-primary transition-colors flex items-center gap-2 disabled:opacity-50"
         >
-          {isSearching ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
+          {isSearching ? <div className="animate-spin inline-flex"><Loader2 size={18} /></div> : <Search size={18} />}
           {lang === 'en' ? 'Search' : 'खोजें'}
         </button>
       </div>
